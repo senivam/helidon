@@ -167,7 +167,7 @@ jobs:
                issue_number: context.issue.number,
                owner: context.repo.owner,
                repo: context.repo.repo,
-               body: `[![Examples Check](https://mybinder.org/badge_logo.svg)](https://github.com/${context.repo.owner}/${context.repo.repo}/${BRANCH_NAME}) :point_left: Examples check fail on the PR`
+               body: `:x: :point_left: Examples check fail on the PR. See validation log for details :x:`
              }) 
   archetypes:
     timeout-minutes: 30
