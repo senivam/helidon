@@ -146,8 +146,7 @@ jobs:
           repository: ${{ env.HELIDON_EXAMPLES_REPOSITORY }}
           ref: ${{ env.HELIDON_EXAMPLES_BUILD_BRANCH }}    
           path: ${{ env.HELIDON_EXAMPLES_CHECKOUT_FOLDER }}
-      - name: Examples build 
-        continue-on-error: true
+      - name: Examples build
         run: |
           HELIDON_VERSION=`cat ${{ env.HELIDON_EXAMPLES_CHECKOUT_FOLDER }}/pom.xml | grep "<helidon.version>" | cut -d">" -f 2 | cut -d"<" -f 1`
           HELIDON_VERSION_IN_REPO=`cat bom/pom.xml | grep "<helidon.version>" | cut -d">" -f 2 | cut -d"<" -f 1`
