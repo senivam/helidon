@@ -155,7 +155,7 @@ jobs:
              exit 78
           fi
           cd ${{ env.HELIDON_EXAMPLES_CHECKOUT_FOLDER }}
-          mvn -B verify || exit 78
+          mvn -B clean install || exit 78
       - name: Examples failure on PR
         if: ${{ failure() && contains(fromJSON('["push", "pull_request"]'), github.event_name) }}
         uses: actions/github-script@v6
