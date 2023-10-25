@@ -19,6 +19,9 @@ env:
   JAVA_VERSION: '17'
   JAVA_DISTRO: 'oracle'
   MAVEN_HTTP_ARGS: '-Dmaven.wagon.httpconnectionManager.ttlSeconds=60 -Dmaven.wagon.http.retryHandler.count=3'
+  HELIDON_EXAMPLES_REPOSITORY: 'senivam/helidon-ex.git' # change after examples repo is public
+  HELIDON_EXAMPLES_BUILD_BRANCH: '3x_validate_ex'       # change to a dev-3.x (in the official examples repo)
+  HELIDON_EXAMPLES_CHECKOUT_FOLDER: 'examples_ex'       # can be left as is
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -121,12 +124,13 @@ jobs:
         run: etc/scripts/github-tck.sh
   examples:
     timeout-minutes: 30
+    continue-on-error: true
     strategy:
       matrix:
         os: [ ubuntu-20.04, macos-latest ]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up JDK ${{ env.JAVA_VERSION }}
         uses: actions/setup-java@v3.11.0
         with:
@@ -135,9 +139,23 @@ jobs:
           cache: maven
       - name: Maven build
         run: |
-          mvn -B -e "-Dmaven.test.skip=true" $MAVEN_HTTP_ARGS -DskipTests -Ppipeline install 
-          cd examples
-          mvn -B verify
+          mvn -B -e "-Dmaven.test.skip=true" $MAVEN_HTTP_ARGS -DskipTests -Ppipeline install
+      - name: Examples checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: '0'
+          repository: ${{ env.HELIDON_EXAMPLES_REPOSITORY }}
+          ref: ${{ env.HELIDON_EXAMPLES_BUILD_BRANCH }}
+          path: ${{ env.HELIDON_EXAMPLES_CHECKOUT_FOLDER }}
+      - name: Examples build
+        run: |
+          HELIDON_VERSION=`cat ${{ env.HELIDON_EXAMPLES_CHECKOUT_FOLDER }}/pom.xml | grep "<helidon.version>" | cut -d">" -f 2 | cut -d"<" -f 1`
+          HELIDON_VERSION_IN_REPO=`cat bom/pom.xml | grep "<helidon.version>" | cut -d">" -f 2 | cut -d"<" -f 1`
+          if [ ${HELIDON_VERSION} != ${HELIDON_VERSION_IN_REPO} ]; then
+             exit 78
+          fi
+          cd ${{ env.HELIDON_EXAMPLES_CHECKOUT_FOLDER }}
+          mvn -B clean install || exit 78
   archetypes:
     timeout-minutes: 30
     strategy:
