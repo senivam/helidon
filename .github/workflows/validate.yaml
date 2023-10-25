@@ -19,9 +19,9 @@ env:
   JAVA_VERSION: '17'
   JAVA_DISTRO: 'oracle'
   MAVEN_HTTP_ARGS: '-Dmaven.wagon.httpconnectionManager.ttlSeconds=60 -Dmaven.wagon.http.retryHandler.count=3'
-  HELIDON_EXAMPLES_REPOSITORY: 'senivam/helidon-ex.git'
-  HELIDON_EXAMPLES_BUILD_BRANCH: '3x_validate_ex'
-  HELIDON_EXAMPLES_CHECKOUT_FOLDER: 'examples_ex'
+  HELIDON_EXAMPLES_REPOSITORY: 'senivam/helidon-ex.git' # change after examples repo is public
+  HELIDON_EXAMPLES_BUILD_BRANCH: '3x_validate_ex'       # change to a dev-3.x (in the official examples repo)
+  HELIDON_EXAMPLES_CHECKOUT_FOLDER: 'examples_ex'       # can be left as is
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -156,19 +156,6 @@ jobs:
           fi
           cd ${{ env.HELIDON_EXAMPLES_CHECKOUT_FOLDER }}
           mvn -B clean install || exit 78
-      - name: Examples failure on PR
-        if: ${{ failure() && contains(fromJSON('["push", "pull_request"]'), github.event_name) }}
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            var BRANCH_NAME = process.env.BRANCH_NAME;
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `:x: :point_left: Examples check fail on the PR. See validation log for details :x:`
-            })
   archetypes:
     timeout-minutes: 30
     strategy:
