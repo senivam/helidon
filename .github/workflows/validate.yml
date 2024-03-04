@@ -74,10 +74,13 @@ jobs:
         uses: actions/setup-java@v4.1.0
         with:
           distribution: ${{ env.JAVA_DISTRO }}
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '11.0.21'
+          check-latest: false
           cache: maven
       - name: Maven build
-        run: etc/scripts/github-build.sh
+        run: |
+           export MAVEN_ARGS=-Djava.vm.specification.version=11.0.21
+           etc/scripts/github-build.sh
       - name: Archive Test results
         uses: actions/upload-artifact@v3.1.2
         if: always()
